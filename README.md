@@ -65,7 +65,9 @@ Throughout the course, reason about three categories separately:
 | [03 - pi-agent-core](03-pi-agent-core/) | Agent loop | Understand turns, tool execution, queues, and lifecycle |
 | [04 - pi-tui](04-pi-tui/) | Terminal UI | Understand differential rendering, overlays, focus, and regressions |
 | [05 - pi-coding-agent](05-pi-coding-agent/) | Product runtime | Understand runtime assembly, extensions, sessions, compaction, and tree navigation |
-| [06 - Capstone](06-capstone/) | Real-flow tracing | Prove deep understanding on real pi flows |
+| [06 - Cross-Cutting Subsystems](06-cross-cutting-subsystems/) | Event bus, tools, abort, persistence | Understand the systems that span all layers |
+| [07 - Capstone](07-capstone/) | Real-flow tracing | Prove deep understanding on real pi flows |
+| [Learner Notes](learner-notes/) | Synthesis | Write down what you understand, per module |
 | [Understanding Checklist](UNDERSTANDING-CHECKLIST.md) | Exit criteria | Verify that you actually understand the system |
 
 ## Primary Reading Principle
@@ -85,6 +87,22 @@ If you want the fastest route to real understanding:
 - read `00`, `01`, `02`, `03`, `04`
 - do all `tests-to-read.md` files in order
 - spend most of your time in `05`
-- use `06` to trace real production flows end-to-end
+- read `06` to connect what you saw in `02`–`05`
+- use `07` to trace real production flows end-to-end
+- fill in `learner-notes/` as you go; treat empty sections as gaps in understanding
 
 The optional “build mini-pi” work remains useful, but it is no longer the main endpoint of the course.
+
+## What This Course Does Not Cover
+
+This course is intentionally scoped to the core runtime stack. The following are deliberately out of scope. If you need them, read the live repo directly.
+
+- `packages/web-ui` — the web frontend is not part of the core runtime focus
+- image generation paths in `pi-ai` (`images.ts`, `images-api-registry.ts`, `providers/images/`)
+- the CLI surface in `packages/coding-agent/src/cli/` and the print/RPC modes — mentioned in capstone Flow A but not studied in depth
+- provider-specific transport details (Bedrock, Azure, OAuth flows, GitHub Copilot headers)
+- the `bun/` runtime adaptation layer in `coding-agent`
+- export-html, telemetry, footer/keybinding/theme subsystems
+- migration scripts and packaging
+
+These are real and important; they are simply not on the critical path to understanding pi’s architecture.

@@ -7,12 +7,13 @@
 Read these in order:
 
 1. `../pi/packages/tui/README.md`
-2. `../pi/packages/tui/src/tui.ts`
-3. `../pi/packages/tui/src/components/editor.ts`
-4. `../pi/packages/tui/src/components/select-list.ts`
-5. `../pi/packages/tui/src/terminal.ts`
-6. `../pi/packages/tui/src/utils.ts`
-7. [`tests-to-read.md`](tests-to-read.md)
+2. [`01-rendering-pipeline.md`](01-rendering-pipeline.md) — the render loop in detail
+3. `../pi/packages/tui/src/tui.ts`
+4. `../pi/packages/tui/src/components/editor.ts`
+5. `../pi/packages/tui/src/components/select-list.ts`
+6. `../pi/packages/tui/src/terminal.ts`
+7. `../pi/packages/tui/src/utils.ts`
+8. [`tests-to-read.md`](tests-to-read.md)
 
 ## Stable Surface
 
@@ -59,7 +60,7 @@ That is more useful than memorizing individual helper functions.
 
 ## Required Exercises
 
-- [Exercise 01: Counter Component](exercises/exercise-01-counter.md)
+- [Exercise 01: Counter Component (with diff step)](exercises/exercise-01-counter.md)
 - [Exercise 02: Render Regression Reading](exercises/exercise-02-render-regression.md)
 
 ## Questions to Answer Before Moving On

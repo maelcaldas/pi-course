@@ -1,12 +1,18 @@
-# Module 06: Capstone
+# Module 07: Capstone
 
 The primary capstone is now tracing real pi flows end-to-end.
 
 Building a minimal clone is still useful, but it is secondary to understanding how the real system works today.
 
+## Calibration: Worked Flow A
+
+Before producing your own flow notes, read [`flow-a-worked-example.md`](flow-a-worked-example.md). It is the **bar** for depth and structure. Your other flows should match it in shape: one-paragraph summary, numbered step trace tied to files, sequence diagram, invariants, and a stable / current / policy / evolving classification at the end.
+
+Do not skip this. Different readers calibrate “deep enough” very differently — the worked example is the shared reference.
+
 ## Primary Capstone: Trace Real Pi Flows
 
-Choose at least three flows and explain them in detail from source and tests.
+Choose at least three flows and explain them in detail from source and tests. Flow A is provided as a worked example; you still owe at least three of B/C/D (or your own) at the same depth.
 
 Recommended flows:
 
