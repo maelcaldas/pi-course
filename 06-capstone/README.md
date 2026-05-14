@@ -38,7 +38,7 @@ Create a new TypeScript project:
 ```bash
 mkdir mini-pi && cd mini-pi
 npm init -y
-npm install typescript @types/node @mariozechner/pi-ai @mariozechner/pi-agent-core @mariozechner/pi-tui
+npm install typescript @types/node @earendil-works/pi-ai @earendil-works/pi-agent-core @earendil-works/pi-tui
 npx tsc --init
 ```
 
@@ -74,6 +74,8 @@ Implement JSONL session storage:
 - Append messages to a file
 - Load previous messages on startup
 - Simple format: one JSON object per line
+
+Use a simplified format for the capstone. Current pi's real session format is documented in `packages/coding-agent/docs/session-format.md`.
 
 ### Step 6: Minimal TUI (`src/tui.ts`)
 
@@ -130,7 +132,10 @@ Your implementation should demonstrate understanding of:
 
 Study the actual pi source code as you build:
 - `packages/agent/src/agent-loop.ts` for the loop structure
-- `packages/coding-agent/src/core/tools/` for tool implementations
+- `packages/coding-agent/src/core/tools/read.ts` for the read tool
+- `packages/coding-agent/src/core/tools/write.ts` for the write tool
+- `packages/coding-agent/src/core/tools/edit.ts` for the edit tool
+- `packages/coding-agent/src/core/tools/bash.ts` for the bash tool
 - `packages/tui/src/components/editor.ts` for the editor
 - `packages/coding-agent/src/core/session-manager.ts` for persistence
 

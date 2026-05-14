@@ -4,8 +4,7 @@
  * This shows how to handle streaming events including partial tool arguments.
  */
 
-import { getModel, stream, validateToolCall, type Context, type Tool } from "@mariozechner/pi-ai";
-import { Type } from "@mariozechner/pi-ai";
+import { getModel, stream, validateToolCall, Type, type Context, type Tool } from "@earendil-works/pi-ai";
 
 const calculatorTool: Tool = {
   name: "calculate",
@@ -19,7 +18,7 @@ async function main() {
   const model = getModel("openai", "gpt-4o-mini");
   const context: Context = {
     systemPrompt: "You are a calculator assistant. Use the calculate tool for math.",
-    messages: [{ role: "user", content: "What is 1234 * 5678?" }],
+    messages: [{ role: "user", content: "What is 1234 * 5678?", timestamp: Date.now() }],
     tools: [calculatorTool],
   };
 

@@ -86,6 +86,8 @@ This is the mechanism that makes interactive mode feel responsive. The user neve
 
 Sessions are stored as JSONL files with a tree structure. Each entry has an `id` and `parentId`, enabling in-place branching without creating new files. This is how `/tree`, `/fork`, and `/clone` work.
 
+The exact on-disk schema evolves. For the current v3 format, see `packages/coding-agent/docs/session-format.md` in the pi repo.
+
 ### 8. Compaction as Lossy Summarization
 
 When context windows fill up, pi compacts older messages into a summary. This is intentionally lossy. The full history remains in the JSONL file; use `/tree` to revisit. Compaction is a runtime transform, not a data mutation.

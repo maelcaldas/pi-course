@@ -2,7 +2,7 @@
 
 ## What It Is
 
-`@mariozechner/pi-tui` is a terminal UI library with differential rendering. It knows nothing about LLMs or agents. It renders components to the terminal, handles keyboard input, and manages overlays.
+`@earendil-works/pi-tui` is a terminal UI library with differential rendering. It knows nothing about LLMs or agents. It renders components to the terminal, handles keyboard input, and manages overlays.
 
 ## Core Abstractions
 

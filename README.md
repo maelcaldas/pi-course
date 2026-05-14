@@ -2,6 +2,8 @@
 
 A self-contained course for understanding the pi agent architecture end-to-end, from LLM streaming primitives to a full interactive coding agent.
 
+This course focuses on architecture and design. For exact current package names, imports, APIs, and file formats, cross-check the live package READMEs, docs, and source in the `pi` repository.
+
 ## Goal
 
 By the end of this course, you will:

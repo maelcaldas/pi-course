@@ -4,7 +4,7 @@
  * This shows how to create components, handle input, and use differential rendering.
  */
 
-import { Component, ProcessTerminal, TUI } from "@mariozechner/pi-tui";
+import { Key, ProcessTerminal, TUI, matchesKey, truncateToWidth, type Component } from "@earendil-works/pi-tui";
 
 // --- 1. Define a component ---
 
@@ -18,8 +18,7 @@ class Counter implements Component {
 
   render(width: number): string[] {
     const line = `${this.label}: ${this.count}`;
-    // Pad or truncate to width
-    return [line.slice(0, width)];
+    return [truncateToWidth(line, width)];
   }
 
   handleInput(data: string): void {
@@ -49,11 +48,11 @@ tui.setFocus(counter);
 console.log("Press + to increment, - to decrement, q to quit");
 tui.start();
 
-// Handle 'q' to quit
+// Handle quit
 tui.addInputListener((data) => {
-  if (data === "q") {
+  if (matchesKey(data, Key.ctrl("c")) || data === "q") {
     tui.stop();
     process.exit(0);
   }
-  return undefined; // Let other handlers process it
+  return undefined;
 });

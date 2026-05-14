@@ -5,9 +5,9 @@
  * It shows what pi-agent-core abstracts away.
  */
 
-import { complete, getModel, stream, type Context, type Tool } from "@mariozechner/pi-ai";
-import { Type } from "@mariozechner/pi-ai";
-import { readFileSync, writeFileSync } from "node:fs";
+import { execSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { complete, getModel, Type, type Context, type Tool } from "@earendil-works/pi-ai";
 
 // --- 1. Define tools ---
 
@@ -31,13 +31,21 @@ const tools = [readTool, bashTool];
 
 // --- 2. Tool execution ---
 
+function requireString(value: unknown, name: string): string {
+  if (typeof value !== "string") {
+    throw new Error(`${name} must be a string`);
+  }
+  return value;
+}
+
 async function executeTool(name: string, args: Record<string, unknown>): Promise<string> {
   if (name === "read") {
-    return readFileSync(args.path as string, "utf-8");
+    const path = requireString(args.path, "path");
+    return readFileSync(path, "utf-8");
   }
   if (name === "bash") {
-    const { execSync } = await import("node:child_process");
-    return execSync(args.command as string, { encoding: "utf-8" });
+    const command = requireString(args.command, "command");
+    return execSync(command, { encoding: "utf-8" });
   }
   throw new Error(`Unknown tool: ${name}`);
 }
@@ -49,32 +57,29 @@ async function runAgent(userMessage: string) {
 
   const context: Context = {
     systemPrompt: "You are a helpful assistant with access to file and shell tools.",
-    messages: [{ role: "user", content: userMessage }],
+    messages: [{ role: "user", content: userMessage, timestamp: Date.now() }],
     tools,
   };
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    // Stream the response
     const response = await complete(model, context);
     context.messages.push(response);
 
-    // Check for tool calls
-    const toolCalls = response.content.filter((c) => c.type === "toolCall");
+    const toolCalls = response.content.filter((content) => content.type === "toolCall");
     if (toolCalls.length === 0) {
-      console.log("Assistant:", response.content.find((c) => c.type === "text")?.text);
+      console.log("Assistant:", response.content.find((content) => content.type === "text")?.text);
       break;
     }
 
-    // Execute tools and add results
-    for (const call of toolCalls) {
-      console.log(`Tool: ${call.name}(${JSON.stringify(call.arguments)})`);
+    for (const toolCall of toolCalls) {
+      console.log(`Tool: ${toolCall.name}(${JSON.stringify(toolCall.arguments)})`);
       try {
-        const result = await executeTool(call.name, call.arguments);
+        const result = await executeTool(toolCall.name, toolCall.arguments);
         context.messages.push({
           role: "toolResult",
-          toolCallId: call.id,
-          toolName: call.name,
+          toolCallId: toolCall.id,
+          toolName: toolCall.name,
           content: [{ type: "text", text: result }],
           isError: false,
           timestamp: Date.now(),
@@ -82,8 +87,8 @@ async function runAgent(userMessage: string) {
       } catch (error) {
         context.messages.push({
           role: "toolResult",
-          toolCallId: call.id,
-          toolName: call.name,
+          toolCallId: toolCall.id,
+          toolName: toolCall.name,
           content: [{ type: "text", text: error instanceof Error ? error.message : String(error) }],
           isError: true,
           timestamp: Date.now(),

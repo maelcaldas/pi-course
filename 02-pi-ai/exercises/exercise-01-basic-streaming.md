@@ -11,7 +11,7 @@ Write a script that streams a response from any provider and tracks total tokens
 ## Starter Code
 
 ```typescript
-import { getModel, stream } from "@mariozechner/pi-ai";
+import { getModel, stream } from "@earendil-works/pi-ai";
 
 async function main() {
   const provider = process.argv[2] || "openai";

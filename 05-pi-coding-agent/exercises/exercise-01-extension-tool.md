@@ -12,8 +12,8 @@ Write an extension that adds a custom tool to pi.
 ## Extension Template
 
 ```typescript
-import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { Type } from "@mariozechner/pi-ai";
+import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { Type } from "@earendil-works/pi-ai";
 import { readdirSync } from "node:fs";
 
 export default function (pi: ExtensionAPI) {

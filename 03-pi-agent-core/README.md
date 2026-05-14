@@ -2,7 +2,7 @@
 
 ## What It Is
 
-`@mariozechner/pi-agent-core` is the heart of the pi agent. It manages the conversation loop: send prompts to the LLM, handle tool calls, emit events, and maintain state. It knows nothing about terminals, sessions, or extensions. It is pure agent logic.
+`@earendil-works/pi-agent-core` is the heart of the pi agent. It manages the conversation loop: send prompts to the LLM, handle tool calls, emit events, and maintain state. It knows nothing about terminals, sessions, or extensions. It is pure agent logic.
 
 ## Core Abstractions
 
@@ -189,7 +189,7 @@ The low-level `agentLoop()` stream does **not** provide this barrier. Events are
 Apps can extend `AgentMessage` via declaration merging:
 
 ```typescript
-declare module '@mariozechner/pi-agent-core' {
+declare module '@earendil-works/pi-agent-core' {
     interface CustomAgentMessages {
         notification: { role: 'notification'; text: string; timestamp: number };
     }

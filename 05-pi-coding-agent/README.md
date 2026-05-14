@@ -2,7 +2,7 @@
 
 ## What It Is
 
-`@mariozechner/pi-coding-agent` is the full interactive CLI product. It ties together `pi-ai`, `pi-agent-core`, and `pi-tui` and adds:
+`@earendil-works/pi-coding-agent` is the full interactive CLI product. It ties together `pi-ai`, `pi-agent-core`, and `pi-tui` and adds:
 
 - Session management (persistence, branching, forking, cloning)
 - Compaction (manual and automatic)
@@ -86,14 +86,16 @@ InteractiveMode
 Sessions are stored as JSONL files. Each line is an entry:
 
 ```jsonl
-{"type":"header","version":3,"cwd":"/home/user/project"}
-{"type":"model_change","provider":"anthropic","modelId":"claude-sonnet-4-20250514"}
-{"type":"thinking_level_change","level":"medium"}
-{"type":"message","id":"msg-1","parentId":null,"role":"user","content":"Hello"}
-{"type":"message","id":"msg-2","parentId":"msg-1","role":"assistant","content":"Hi there!"}
+{"type":"session","version":3,"id":"sess-abc123","timestamp":"2024-12-03T14:00:00.000Z","cwd":"/home/user/project"}
+{"type":"model_change","id":"a1b2c3d4","parentId":null,"timestamp":"2024-12-03T14:00:01.000Z","provider":"anthropic","modelId":"claude-sonnet-4-5"}
+{"type":"thinking_level_change","id":"b2c3d4e5","parentId":"a1b2c3d4","timestamp":"2024-12-03T14:00:02.000Z","thinkingLevel":"medium"}
+{"type":"message","id":"c3d4e5f6","parentId":"b2c3d4e5","timestamp":"2024-12-03T14:00:03.000Z","message":{"role":"user","content":"Hello","timestamp":1733234403000}}
+{"type":"message","id":"d4e5f6g7","parentId":"c3d4e5f6","timestamp":"2024-12-03T14:00:04.000Z","message":{"role":"assistant","content":[{"type":"text","text":"Hi there!"}],"api":"anthropic-messages","provider":"anthropic","model":"claude-sonnet-4-5","usage":{"input":12,"output":8,"cacheRead":0,"cacheWrite":0,"totalTokens":20,"cost":{"input":0.000036,"output":0.00012,"cacheRead":0,"cacheWrite":0,"total":0.000156}},"stopReason":"stop","timestamp":1733234404000}}
 ```
 
 The tree structure is implicit via `parentId`. The active branch is a sequence of entries where each entry's `id` matches the next entry's `parentId`.
+
+For the authoritative current schema, see `packages/coding-agent/docs/session-format.md` in the pi repo.
 
 ### Branching
 

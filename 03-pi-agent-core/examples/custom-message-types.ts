@@ -4,12 +4,12 @@
  * This shows how to add UI-only messages that never reach the LLM.
  */
 
-import { Agent } from "@mariozechner/pi-agent-core";
-import { getModel } from "@mariozechner/pi-ai";
+import { Agent } from "@earendil-works/pi-agent-core";
+import { getModel } from "@earendil-works/pi-ai";
 
 // --- 1. Extend AgentMessage via declaration merging ---
 
-declare module "@mariozechner/pi-agent-core" {
+declare module "@earendil-works/pi-agent-core" {
   interface CustomAgentMessages {
     notification: {
       role: "notification";
@@ -33,23 +33,25 @@ const agent = new Agent({
     model: getModel("openai", "gpt-4o-mini"),
   },
   convertToLlm: (messages) =>
-    messages.flatMap((m) => {
-      if (m.role === "notification") {
+    messages.flatMap((message) => {
+      if (message.role === "notification") {
         // Filter out notifications — the LLM never sees them
         return [];
       }
-      if (m.role === "status") {
+      if (message.role === "status") {
         // Convert status to a user message for the LLM
         return [
           {
             role: "user" as const,
-            content: `Status update: ${m.operation} is ${m.progress}% complete`,
-            timestamp: m.timestamp,
+            content: `Status update: ${message.operation} is ${message.progress}% complete`,
+            timestamp: message.timestamp,
           },
         ];
       }
-      // Pass through standard LLM messages
-      return [m];
+      if (message.role === "user" || message.role === "assistant" || message.role === "toolResult") {
+        return [message];
+      }
+      return [];
     }),
 });
 

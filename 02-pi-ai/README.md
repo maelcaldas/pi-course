@@ -2,7 +2,7 @@
 
 ## What It Is
 
-`@mariozechner/pi-ai` is a unified multi-provider LLM API. It abstracts away provider differences (OpenAI, Anthropic, Google, Groq, etc.) behind a single streaming interface. It handles:
+`@earendil-works/pi-ai` is a unified multi-provider LLM API. It abstracts away provider differences (OpenAI, Anthropic, Google, Groq, etc.) behind a single streaming interface. It handles:
 
 - Streaming text, thinking, and tool calls
 - Automatic model discovery and provider configuration
@@ -107,8 +107,10 @@ During `toolcall_delta` events, `arguments` contains the best-effort parse of pa
 The library supports switching models mid-conversation. When messages from one provider are sent to another:
 - User and tool result messages pass through unchanged
 - Assistant messages from the same provider/API are preserved as-is
-- Assistant messages from different providers have thinking blocks converted to `<thinking>` tags
+- Assistant messages from different providers have their thinking blocks transformed into provider-compatible text content
 - Tool calls and regular text are preserved unchanged
+
+Exact transform details evolve, so verify current behavior in `packages/ai/src/providers/transform-messages.ts` and `packages/ai/test/cross-provider-handoff.test.ts`.
 
 This is what enables Ctrl+P model cycling in pi without losing context.
 
@@ -124,7 +126,7 @@ Define a `get_weather` tool with TypeBox schema. Stream a conversation where the
 
 ### Exercise 3: Cross-Provider Handoff
 
-Start a conversation with Claude, switch to GPT-5 mid-conversation, then switch to Gemini. Verify that tool calls and thinking blocks are preserved correctly.
+Start a conversation with Claude, switch to GPT-5 mid-conversation, then switch to Gemini. Verify that tool calls and transformed thinking content remain compatible across providers.
 
 ### Exercise 4: Faux Provider for Testing
 
@@ -137,5 +139,5 @@ Use `registerFauxProvider()` to create a deterministic test that simulates a too
 | `packages/ai/src/types.ts` | Core types: Model, Context, Message, events |
 | `packages/ai/src/stream.ts` | `stream()`, `complete()`, event normalization |
 | `packages/ai/src/providers/*.ts` | Provider implementations |
-| `packages/ai/src/validate.ts` | Tool argument validation with TypeBox |
-| `packages/ai/src/context.ts` | Context serialization and cross-provider transforms |
+| `packages/ai/src/utils/validation.ts` | Tool argument validation with TypeBox |
+| `packages/ai/src/providers/transform-messages.ts` | Cross-provider message transforms |
