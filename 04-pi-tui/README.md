@@ -1,140 +1,73 @@
-# Module 04: pi-tui — Terminal UI
+# Module 04: pi-tui
 
-## What It Is
+`@earendil-works/pi-tui` is a terminal UI system, not a chat-specific widget library.
 
-`@earendil-works/pi-tui` is a terminal UI library with differential rendering. It knows nothing about LLMs or agents. It renders components to the terminal, handles keyboard input, and manages overlays.
+## Source-Guided Path
 
-## Core Abstractions
+Read these in order:
 
-### Component
+1. `../pi/packages/tui/README.md`
+2. `../pi/packages/tui/src/tui.ts`
+3. `../pi/packages/tui/src/components/editor.ts`
+4. `../pi/packages/tui/src/components/select-list.ts`
+5. `../pi/packages/tui/src/terminal.ts`
+6. `../pi/packages/tui/src/utils.ts`
+7. [`tests-to-read.md`](tests-to-read.md)
 
-Every UI element implements `Component`:
+## Stable Surface
 
-```typescript
-interface Component {
-  render(width: number): string[];
-  handleInput?(data: string): void;
-  invalidate(): void;
-}
-```
+The important stable concepts are:
 
-A component renders itself to an array of strings (one per line) given a viewport width. There is no height constraint; components render as many lines as they need.
+- `Component`
+- `TUI`
+- overlays
+- focus model
+- hardware cursor / `CURSOR_MARKER`
+- differential rendering
 
-### TUI
+## Core Mental Model
 
-The `TUI` class is the root container:
-- Manages the component tree
-- Handles differential rendering (only redraws changed lines)
-- Processes keyboard input and routes it to the focused component
-- Manages overlays (modal dialogs, popups)
-- Positions the hardware cursor for IME support
+Pi’s TUI renders strings, not a virtual DOM. The important loop is:
 
-### Differential Rendering
+1. render components into lines
+2. composite overlays into the same line space
+3. locate the cursor marker
+4. diff against previous rendered lines
+5. emit the minimal terminal update wrapped in synchronized output
 
-The TUI compares the current render output to the previous output and only updates changed lines. This minimizes terminal flicker and improves performance.
+This simplicity is deliberate.
 
-```
-Previous:  ["Hello", "World", "!!!"]
-Current:   ["Hello", "Pi",    "!!!"]
-           ────────  ────     ─────
-           unchanged changed  unchanged
+## What to Watch for in `tui.ts`
 
-Only line 1 is redrawn.
-```
+The large file size is not the key point. The key point is the set of invariants it is protecting:
 
-### Overlay System
+- line widths must stay valid
+- overlays must behave like part of the same render space
+- focus transitions must remain consistent
+- hardware cursor placement must remain compatible with IME workflows
+- image cleanup must not leave terminal artifacts behind
 
-Overlays are components rendered on top of the base content:
-- Positioned with anchors (`center`, `top-left`, etc.) or absolute coordinates
-- Can be sized absolutely or as percentages
-- Support margins and max height
-- Capture focus when shown
-- Stacked with focus order (higher = on top)
+## Regression Mindset
 
-### Focus and Hardware Cursor
+TUI changes are easy to reason about locally and easy to break globally.
 
-Components can implement `Focusable` to receive focus. When focused, they emit `CURSOR_MARKER` at the cursor position. The TUI finds this marker, strips it, and positions the hardware cursor there. This enables proper IME candidate window positioning.
+Read the tests with this question:
 
-## Deep Dive: Rendering
+- “What terminal artifact or interaction bug did this test exist to prevent?”
 
-### The Render Cycle
+That is more useful than memorizing individual helper functions.
 
-1. `requestRender()` is called (debounced to ~60fps)
-2. `doRender()` runs:
-   - Render all components to lines
-   - Composite overlays into the lines
-   - Extract cursor position from `CURSOR_MARKER`
-   - Apply line resets (normalize ANSI sequences)
-   - Compare to previous lines
-   - Build escape sequence buffer for updates
-   - Write buffer to terminal
+## Required Exercises
 
-### Full Render Triggers
+- [Exercise 01: Counter Component](exercises/exercise-01-counter.md)
+- [Exercise 02: Render Regression Reading](exercises/exercise-02-render-regression.md)
 
-A full render (clear screen + redraw everything) happens when:
-- Terminal width changes (wrapping changes)
-- Terminal height changes (viewport alignment)
-- Content shrinks below the working area (`clearOnShrink`)
-- First render
-- `requestRender(force=true)` is called
+## Questions to Answer Before Moving On
 
-### Differential Update
+You should be able to explain:
 
-For partial updates, the TUI:
-1. Finds the first and last changed lines
-2. Moves the cursor to the first changed line
-3. Rewrites from there to the last changed line
-4. Clears any lines that were deleted
-
-### Terminal Synchronization
-
-All output is wrapped in `\x1b[?2026h` (begin synchronized output) and `\x1b[?2026l` (end synchronized output). This tells the terminal to batch updates and prevents flicker.
-
-## Design Decisions
-
-### Why Strings Instead of a Virtual DOM
-
-The TUI renders directly to strings. There is no virtual DOM or diffing algorithm. The "diff" is a simple line-by-line string comparison. This is fast enough for terminal UIs and much simpler than a full VDOM.
-
-### Why No Height in Component Interface
-
-Components only know their width. They render as many lines as needed. The TUI handles scrolling and viewport management. This simplifies components: they never have to worry about fitting into a constrained space.
-
-### Why Overlays are Composited, Not Rendered Separately
-
-Overlays are rendered into the same line array as the base content before differential comparison. This means:
-- Overlay changes trigger the same differential update as base content changes
-- No special overlay rendering path
-- Overlays can be partially updated just like base content
-
-### Why APC Sequence for Cursor Marker
-
-`CURSOR_MARKER` uses an APC (Application Program Command) sequence: `\x1b_pi:c\x07`. Terminals ignore APC sequences, so this is a zero-width marker that the TUI can find and strip.
-
-## Exercises
-
-### Exercise 1: Minimal Component
-
-Implement a `Counter` component that displays a number and increments/decrements on `+`/`-` key presses.
-
-### Exercise 2: Overlay Dialog
-
-Create a modal confirmation dialog using `showOverlay`. Position it centered with a max height of 50%.
-
-### Exercise 3: Differential Rendering
-
-Build a component that changes only one character per render. Observe that only that line is redrawn by enabling `PI_DEBUG_REDRAW=1`.
-
-### Exercise 4: Focus Chain
-
-Create two focusable components. Implement tab cycling between them. Verify that the hardware cursor moves to the correct position in each.
-
-## Key Source Files
-
-| File | Purpose |
-|------|---------|
-| `packages/tui/src/tui.ts` | `TUI` class: rendering, input, overlays |
-| `packages/tui/src/components/editor.ts` | Text editor component |
-| `packages/tui/src/components/select-list.ts` | List selector component |
-| `packages/tui/src/terminal.ts` | Terminal abstraction |
-| `packages/tui/src/utils.ts` | Width calculation, ANSI handling |
+- why string-based rendering is sufficient here
+- why overlays are composited into the same render space
+- why `CURSOR_MARKER` exists at all
+- when pi chooses a full redraw instead of a partial redraw
+- what kinds of regressions the TUI tests are defending against

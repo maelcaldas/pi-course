@@ -1,124 +1,114 @@
 # Module 01: Foundations
 
-## What Pi Is
+This module establishes the architectural model of pi before you dive into implementation details.
 
-Pi is a minimal terminal coding harness built as a layered stack. It is aggressively extensible so it does not have to dictate your workflow. Features that other tools bake in (sub-agents, plan mode, permission popups, MCP) are built with extensions, skills, or prompt templates instead.
+## Source-Guided Path
+
+Read these in order:
+
+1. `../pi/README.md`
+2. `../pi/packages/ai/README.md`
+3. `../pi/packages/agent/README.md`
+4. `../pi/packages/tui/README.md`
+5. `../pi/packages/coding-agent/README.md`
 
 ## The Five Layers
 
 ```
 +----------------------------------------------------------+
 |  pi-coding-agent  |  Interactive CLI, sessions, themes,  |
-|                   |  extensions, skills, compaction        |
+|                   |  extensions, skills, compaction       |
 +-------------------+----------------------------------------+
-|  pi-tui           |  Terminal UI with differential         |
-|                   |  rendering, overlays, components       |
+|  pi-tui           |  Terminal UI, differential rendering,  |
+|                   |  overlays, focus, input                |
 +-------------------+----------------------------------------+
-|  pi-agent-core    |  Agent loop, state, events,            |
-|                   |  tool execution (parallel/sequential)  |
+|  pi-agent-core    |  Agent loop, turns, tool execution,    |
+|                   |  queues, lifecycle events              |
 +-------------------+----------------------------------------+
-|  pi-ai            |  Unified multi-provider LLM API:       |
-|                   |  streaming, tools, thinking, images    |
+|  pi-ai            |  Unified LLM API, provider adaptation, |
+|                   |  tools, reasoning, images              |
 +-------------------+----------------------------------------+
-|  LLM Providers    |  Anthropic, OpenAI, Google, Groq,      |
-|                   |  xAI, local models, etc.               |
+|  LLM Providers    |  Anthropic, OpenAI, Google, Groq, etc. |
 +----------------------------------------------------------+
 ```
 
-## Key Design Decisions
+## The Core Boundary Decisions
 
-### 1. Separation of Concerns
+### 1. Separation of concerns
 
-Each layer has a single responsibility:
-- **pi-ai** knows about LLMs and nothing else. It does not know about agents, tools, or terminals.
-- **pi-agent-core** knows about the agent loop and tool execution but knows nothing about terminals or session files.
-- **pi-tui** knows about rendering to a terminal but knows nothing about LLMs.
-- **pi-coding-agent** glues everything together and adds product-level concerns: sessions, extensions, skills, compaction.
+Each layer knows less than you might expect:
 
-This means you can use pi-ai in a web app, pi-agent-core in a headless server, and pi-tui in a completely different CLI tool.
+- `pi-ai` knows models, messages, tools, and streaming — not sessions or terminals
+- `pi-agent-core` knows turns, tools, and events — not files, settings, or UI
+- `pi-tui` knows terminal rendering and focus — not LLMs or sessions
+- `pi-coding-agent` assembles a product out of the lower layers
 
-### 2. Event-Driven Architecture
+This is the first thing to protect mentally. Most of the repo becomes legible once you stop expecting product behavior to live in the lower packages.
 
-The agent loop emits events. The UI subscribes to them. There is no direct coupling between the LLM streaming and the terminal display.
+### 2. Events instead of direct coupling
 
-```
-User types → AgentSession.prompt() → Agent.prompt()
-                                    ↓
-                              Agent Loop runs
-                                    ↓
-                    Events: agent_start, turn_start,
-                    message_start, message_update,
-                    message_end, tool_execution_start,
-                    tool_execution_end, turn_end, agent_end
-                                    ↓
-                         UI subscribers update display
-```
+The UI does not own the agent loop. The loop emits events; product layers subscribe.
 
-This decoupling is critical. It means:
-- The same agent can drive an interactive TUI, a print-mode CLI, or an RPC server
-- Events can be logged, intercepted, or transformed by extensions
-- The UI can be replaced entirely without touching the agent logic
+That means the same loop can drive:
 
-### 3. AgentMessage vs LLM Message
+- an interactive TUI
+- a print-mode CLI
+- JSON/RPC modes
+- host applications embedding the SDK
 
-The agent uses `AgentMessage`, a superset of LLM messages. This allows:
-- Custom message types (notifications, UI artifacts) that the LLM never sees
-- A clean separation between the conversation transcript and what gets sent to the model
-- `convertToLlm` bridges the gap by filtering and transforming before each LLM call
+### 3. Session state is a tree, not a transcript string
 
-### 4. Streaming Everything
+Pi treats session history as a navigable tree of entries connected by `id` and `parentId`, not as a single append-only conversation.
 
-Everything streams. Text streams in chunks. Tool arguments stream as partial JSON. Thinking blocks stream. Tool execution can stream progress updates. This enables responsive UIs where the user sees output as it is produced, not after a long wait.
+This choice drives:
 
-### 5. Parallel Tool Execution
+- `/tree`
+- `/fork`
+- `/clone`
+- branch summaries
+- compaction reload behavior
 
-Tool calls from a single assistant message execute in parallel by default. They are prepared sequentially (for validation and hooks), then executed concurrently. Results are emitted in completion order but persisted in assistant source order.
+### 4. Compaction is runtime transformation, not data mutation
 
-### 6. Steering and Follow-up Queues
+Compaction is intentionally lossy in memory, but the full session remains persisted in JSONL.
 
-While the agent is working, the user can queue messages:
-- **Steering**: Delivered after the current turn's tool calls finish, before the next LLM call. Use this to interrupt or redirect.
-- **Follow-up**: Delivered only after the agent would otherwise stop. Use this for additional tasks.
+The important distinction is:
 
-This is the mechanism that makes interactive mode feel responsive. The user never has to wait for the agent to completely finish before sending the next instruction.
+- **runtime context** changes
+- **stored history** does not get rewritten into a shorter truth
 
-### 7. Session as JSONL Tree
+### 5. Extensibility is a first-order design choice
 
-Sessions are stored as JSONL files with a tree structure. Each entry has an `id` and `parentId`, enabling in-place branching without creating new files. This is how `/tree`, `/fork`, and `/clone` work.
+Pi omits features other tools hardcode because it expects extensions, skills, prompts, and packages to carry much of the product variation.
 
-The exact on-disk schema evolves. For the current v3 format, see `packages/coding-agent/docs/session-format.md` in the pi repo.
+This is not an afterthought. It is a core architectural value.
 
-### 8. Compaction as Lossy Summarization
+## Stable Surface
 
-When context windows fill up, pi compacts older messages into a summary. This is intentionally lossy. The full history remains in the JSONL file; use `/tree` to revisit. Compaction is a runtime transform, not a data mutation.
+These are the foundations you should expect to keep paying off throughout the course:
 
-### 9. Extensibility Over Built-ins
+- layered architecture
+- event-driven updates
+- queue semantics (steering vs follow-up)
+- session trees
+- compaction as lossy runtime summary
+- extension-first philosophy
 
-Pi intentionally skips features other tools bake in:
-- **No sub-agents**: Build with extensions or spawn pi instances via tmux
-- **No plan mode**: Write plans to files or build with extensions
-- **No MCP**: Build CLI tools with READMEs (skills) or add MCP via extensions
-- **No permission popups**: Run in a container or build your own confirmation flow
-- **No built-in to-dos**: They confuse models; use a TODO.md file
+## Current Implementation Questions to Carry Forward
 
-The philosophy: adapt pi to your workflows, not the other way around.
+As you move into later modules, keep asking:
 
-## Key Boundaries
+- Where exactly is the boundary between generic runtime and product logic?
+- Which parts of the transcript are persisted vs only rendered?
+- Where is ordering guaranteed, and where is it only incidental?
+- Which features are implemented by composition rather than by deep coupling?
 
-| Boundary | What Crosses It | What Does Not |
-|----------|----------------|---------------|
-| pi-ai → pi-agent-core | `streamSimple()`, `complete()`, `Context`, `Message` | Terminal state, session files |
-| pi-agent-core → pi-coding-agent | `Agent`, `AgentEvent`, `AgentMessage` | Model registry, auth, settings |
-| pi-tui → pi-coding-agent | `TUI`, `Component`, `OverlayHandle` | Agent loop, LLM calls |
-| Extensions → pi-coding-agent | Tools, commands, events, UI | Direct agent loop access |
+## Before Moving On
 
-## Concepts Checklist
+Make sure you can explain, without looking at notes:
 
-Before moving to the next module, ensure you can explain:
-- [ ] Why pi-ai knows nothing about agents
-- [ ] The difference between `AgentMessage` and `Message`
-- [ ] What events the agent loop emits and in what order
-- [ ] How steering and follow-up queues enable interactive mode
-- [ ] Why parallel tool execution matters
-- [ ] How sessions support branching without file duplication
-- [ ] Why compaction is lossy and where the original data lives
+- why `pi-ai` knows nothing about terminals
+- why `AgentMessage` can be richer than raw LLM messages
+- why session trees are necessary for pi’s branching model
+- why compaction is described as lossy but safe
+- why extensibility is a design principle rather than a plugin afterthought

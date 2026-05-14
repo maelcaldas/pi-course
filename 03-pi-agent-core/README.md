@@ -1,266 +1,95 @@
-# Module 03: pi-agent-core — The Agent Loop
+# Module 03: pi-agent-core
 
-## What It Is
+`@earendil-works/pi-agent-core` is where “LLM call” becomes “agent turn”.
 
-`@earendil-works/pi-agent-core` is the heart of the pi agent. It manages the conversation loop: send prompts to the LLM, handle tool calls, emit events, and maintain state. It knows nothing about terminals, sessions, or extensions. It is pure agent logic.
-
-## Core Abstractions
-
-### Agent
-
-The `Agent` class is a stateful wrapper around the low-level agent loop. It owns:
-
-- The conversation transcript (`state.messages`)
-- The tool registry (`state.tools`)
-- The current model and thinking level
-- Steering and follow-up queues
-- Event subscribers
-
-```typescript
-const agent = new Agent({
-    initialState: {
-        systemPrompt: 'You are a helpful assistant.',
-        model: getModel('anthropic', 'claude-sonnet-4-20250514'),
-        tools: [readTool, bashTool],
-    },
-});
-
-agent.subscribe((event, signal) => {
-    console.log(event.type);
-});
-
-await agent.prompt('Hello!');
-```
-
-### Agent Loop
-
-The low-level `agentLoop` and `runAgentLoop` functions implement the core logic. Understanding the loop is essential to understanding pi.
-
-## Deep Dive: The Agent Loop
-
-### The Outer and Inner Loops
-
-```
-while (true) {                          // Outer loop: follow-up messages
-  while (hasMoreToolCalls || pendingMessages.length > 0) {
-    // Inner loop: one turn = LLM call + tool execution
-
-    // 1. Inject pending steering messages
-    for (const message of pendingMessages) {
-      emit message_start/message_end
-      add to context
-    }
-
-    // 2. Stream assistant response
-    const message = await streamAssistantResponse(context, config, signal, emit);
-
-    // 3. Check for errors/aborts
-    if (message.stopReason === "error" || message.stopReason === "aborted") {
-      emit turn_end, agent_end
-      return
-    }
-
-    // 4. Execute tool calls
-    const toolCalls = message.content.filter(c => c.type === "toolCall");
-    if (toolCalls.length > 0) {
-      const results = await executeToolCalls(context, message, config, signal, emit);
-      add results to context
-      hasMoreToolCalls = !results.terminate;
-    }
-
-    // 5. Emit turn_end
-    emit turn_end
-
-    // 6. Check shouldStopAfterTurn
-    if (config.shouldStopAfterTurn?.(...)) {
-      emit agent_end
-      return
-    }
-
-    // 7. Check for steering messages
-    pendingMessages = await config.getSteeringMessages?.() || [];
-  }
-
-  // 8. Check for follow-up messages
-  const followUpMessages = await config.getFollowUpMessages?.() || [];
-  if (followUpMessages.length > 0) {
-    pendingMessages = followUpMessages;
-    continue; // Back to inner loop
-  }
-
-  break; // No more messages, exit
-}
-
-emit agent_end;
-```
-
-### Event Sequence for a Simple Prompt
-
-```
-prompt("Hello")
-├─ agent_start
-├─ turn_start
-├─ message_start   { message: userMessage }
-├─ message_end     { message: userMessage }
-├─ message_start   { message: assistantMessage }
-├─ message_update  { message: partial... }
-├─ message_update  { message: partial... }
-├─ message_end     { message: assistantMessage }
-├─ turn_end        { message, toolResults: [] }
-└─ agent_end       { messages: [...] }
-```
-
-### Event Sequence with Tool Calls
-
-```
-prompt("Read config.json")
-├─ agent_start
-├─ turn_start
-├─ message_start/end  { userMessage }
-├─ message_start      { assistantMessage with toolCall }
-├─ message_update...  { streaming tool args }
-├─ message_end        { assistantMessage }
-├─ tool_execution_start   { toolCallId, toolName, args }
-├─ tool_execution_update  { partialResult }  // If tool streams
-├─ tool_execution_end     { toolCallId, result }
-├─ message_start/end  { toolResultMessage }
-├─ turn_end           { message, toolResults: [toolResult] }
-│
-├─ turn_start         // Next turn
-├─ message_start      { assistantMessage }
-├─ message_update...
-├─ message_end
-├─ turn_end
-└─ agent_end
-```
+## Source-Guided Path
 
-### Parallel vs Sequential Tool Execution
+Read these in order:
 
-**Parallel** (default):
+1. `../pi/packages/agent/README.md`
+2. `../pi/packages/agent/src/types.ts`
+3. `../pi/packages/agent/src/agent-loop.ts`
+4. `../pi/packages/agent/src/agent.ts`
+5. [`tests-to-read.md`](tests-to-read.md)
+6. `../pi/packages/agent/docs/agent-harness.md`
 
-1. Preflight all tool calls sequentially (validation, hooks)
-2. Execute allowed tools concurrently
-3. Emit `tool_execution_end` in completion order
-4. Emit toolResult messages in assistant source order
+## Stable Surface
 
-**Sequential**:
+The stable conceptual center of this package is:
 
-1. Execute tool calls one by one
-2. Each waits for the previous to complete
+- `AgentMessage`
+- `Agent`
+- `agentLoop()` / `agentLoopContinue()`
+- turn lifecycle events
+- tool execution lifecycle
+- steering vs follow-up queues
 
-A single tool with `executionMode: "sequential"` forces the entire batch to run sequentially.
+## The Core Mental Model
 
-### Tool Call Lifecycle
+An agent run is not “send prompt, get response”. It is:
 
-```
-1. prepareToolCall
-   ├── Find tool by name
-   ├── prepareArguments (optional shim)
-   ├── validateToolArguments (TypeBox schema validation)
-   ├── beforeToolCall hook (can block)
-   └── Returns: PreparedToolCall or ImmediateToolCallOutcome
+- inject user or queued messages
+- stream an assistant turn
+- extract tool calls
+- preflight tools
+- execute tools
+- append tool results
+- decide whether another LLM turn should run
+- only then stop or accept follow-up work
 
-2. executePreparedToolCall
-   ├── Call tool.execute(toolCallId, params, signal, onUpdate)
-   ├── onUpdate streams partial results
-   └── Returns: ExecutedToolCallOutcome
+## The Two Loops Matter
 
-3. finalizeExecutedToolCall
-   ├── afterToolCall hook (can override result)
-   └── Returns: FinalizedToolCallOutcome
+Read `agent-loop.ts` with this in mind:
 
-4. emitToolExecutionEnd
-5. createToolResultMessage
-6. emitToolResultMessage
-```
+- the **inner loop** handles one assistant turn plus its tool execution chain
+- the **outer loop** handles work that arrives only after the agent would otherwise stop
 
-### The Agent Class as a Barrier
+This is the cleanest explanation of why steering and follow-up are distinct.
 
-The `Agent` class treats `message_end` processing as a barrier before tool preflight begins. This means:
+## The Barrier That Matters
 
-- `beforeToolCall` sees agent state that already includes the assistant message
-- Event listeners for `message_end` complete before any tool starts executing
-- This is critical for extensions that need to inspect or modify the assistant message before tools run
+One subtle but important detail is the difference between:
 
-The low-level `agentLoop()` stream does **not** provide this barrier. Events are emitted as they happen, but the stream does not wait for your async handling before continuing.
+- raw low-level loop observation
+- the `Agent` class as a stateful, listener-aware wrapper
 
-### Custom Message Types
+The `Agent` class treats assistant `message_end` handling as a barrier before tool preflight begins. That is critical for extensions or higher layers that need agent state to include the finalized assistant message before any tool work starts.
 
-Apps can extend `AgentMessage` via declaration merging:
+## Parallel Tool Execution
 
-```typescript
-declare module '@earendil-works/pi-agent-core' {
-    interface CustomAgentMessages {
-        notification: { role: 'notification'; text: string; timestamp: number };
-    }
-}
-```
+Deep understanding here means being able to explain two orderings at once:
 
-Custom types must be handled in `convertToLlm` to filter them out or transform them before sending to the LLM.
+- `tool_execution_end` events may reflect completion order
+- persisted `toolResult` messages still follow assistant source order
 
-## Design Decisions
+That distinction is not accidental. It separates UI responsiveness from deterministic transcript construction.
 
-### Why AgentMessage is a Superset of Message
+## Evolving Direction: AgentHarness
 
-This allows the agent to carry UI-only messages (notifications, status updates) in the transcript without sending them to the LLM. The `convertToLlm` function is the gatekeeper.
+`AgentHarness` is not the stable public center of this module yet, but it is important for understanding the direction of orchestration work.
 
-### Why the Loop is Split into Outer and Inner
+Read `../pi/packages/agent/docs/agent-harness.md` as an architecture memo about:
 
-- **Inner loop**: Handles a single turn (LLM call + tool execution) plus any steering messages that arrive during it.
-- **Outer loop**: Handles follow-up messages that should only run after the agent would otherwise stop.
+- lifecycle phases
+- turn snapshots
+- save points
+- pending session writes
+- runtime config vs in-flight request state
 
-This separation is what makes steering and follow-up semantics correct.
+Treat it as **evolving direction**, not as the final stable model.
 
-### Why toolExecutionEnd Emits in Completion Order but toolResults in Source Order
+## Required Exercises
 
-In parallel mode, tools finish at different times. Emitting `tool_execution_end` in completion order gives the UI real-time feedback. But persisting toolResult messages in assistant source order ensures the LLM sees a deterministic transcript.
+- [Exercise 01: Minimal Agent Loop](exercises/exercise-01-minimal-loop.md)
+- [Exercise 02: Parallel Tool Execution](exercises/exercise-02-parallel-tools.md)
+- [Exercise 03: AgentHarness Reading](exercises/exercise-03-agent-harness-reading.md)
 
-### Why Terminate is a Hint, Not a Command
+## Questions to Answer Before Moving On
 
-Tools can return `terminate: true` to hint that the agent should stop. But this only takes effect when **every** finalized tool result in the batch sets it. This prevents partial termination when multiple tools are running.
+You should be able to explain:
 
-## Exercises
-
-### Exercise 1: Minimal Agent Loop
-
-Implement a minimal agent loop using only `pi-ai` (no `pi-agent-core`). Create a loop that:
-
-1. Sends a user message to the LLM
-2. Handles any tool calls by executing them
-3. Sends tool results back to the LLM
-4. Repeats until no more tool calls
-
-### Exercise 2: Custom Message Types
-
-Extend `AgentMessage` with a custom `notification` type. Create an agent that:
-
-1. Emits a notification before each tool call
-2. Filters notifications out in `convertToLlm`
-3. Verifies notifications appear in the transcript but never reach the LLM
-
-### Exercise 3: Parallel Tool Execution
-
-Create two tools: `fast_tool` (resolves immediately) and `slow_tool` (waits 2 seconds). Have the model call both in the same message. Verify that:
-
-1. `tool_execution_end` for `fast_tool` emits before `slow_tool`
-2. Both toolResult messages appear in source order
-
-### Exercise 4: beforeToolCall and afterToolCall Hooks
-
-Implement a permission gate using `beforeToolCall` that blocks `bash` tool calls unless a global flag is set. Use `afterToolCall` to log all tool executions to a file.
-
-### Exercise 5: Steering Queue
-
-While the agent is executing a long-running tool, queue a steering message. Verify that:
-
-1. The steering message is delivered after the tool finishes
-2. The agent responds to the steering message before any follow-up messages
-
-## Key Source Files
-
-| File                               | Purpose                                                 |
-| ---------------------------------- | ------------------------------------------------------- |
-| `packages/agent/src/agent.ts`      | The `Agent` class: state, queues, subscribers           |
-| `packages/agent/src/agent-loop.ts` | `agentLoop`, `runAgentLoop`, tool execution             |
-| `packages/agent/src/types.ts`      | `AgentMessage`, `AgentTool`, `AgentEvent`, `AgentState` |
-| `packages/agent/src/proxy.ts`      | `streamProxy` for backend proxies                       |
+- the difference between the inner and outer loops
+- why `AgentMessage` is richer than raw LLM message types
+- why the `Agent` class adds semantics beyond the raw loop
+- why tool completion order and transcript order are intentionally different
+- what problem `AgentHarness` is trying to solve beyond `Agent`

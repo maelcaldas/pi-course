@@ -1,143 +1,131 @@
-# Module 02: pi-ai — The Unified LLM API
+# Module 02: pi-ai
 
-## What It Is
+`@earendil-works/pi-ai` is the LLM-facing layer. If you misunderstand this package, you will misread the rest of the stack.
 
-`@earendil-works/pi-ai` is a unified multi-provider LLM API. It abstracts away provider differences (OpenAI, Anthropic, Google, Groq, etc.) behind a single streaming interface. It handles:
+## Source-Guided Path
 
-- Streaming text, thinking, and tool calls
-- Automatic model discovery and provider configuration
-- Token and cost tracking
-- Cross-provider context handoffs
-- Tool definition with TypeBox schemas
+Read these in order:
+
+1. `../pi/packages/ai/README.md`
+2. `../pi/packages/ai/src/types.ts`
+3. `../pi/packages/ai/src/stream.ts`
+4. `../pi/packages/ai/src/providers/transform-messages.ts`
+5. [`tests-to-read.md`](tests-to-read.md)
+
+## Stable Surface
+
+Core abstractions you should internalize:
+
+- `Model`
+- `Context`
+- `Message`
+- `AssistantMessageEventStream`
+- tool definitions via TypeBox schemas
+- `stream()` / `complete()` and `streamSimple()` / `completeSimple()`
+
+## What This Layer Actually Does
+
+`pi-ai` is not an agent framework. It is a normalization layer over heterogeneous provider APIs.
+
+It is responsible for:
+
+- provider/model discovery
+- request adaptation
+- streaming event normalization
+- tool call representation
+- reasoning/thinking normalization
+- image input / image-output distinctions
+- cross-provider conversation handoff transforms
+- usage and cost accounting
+
+It is not responsible for:
+
+- session persistence
+- tool execution
+- turn semantics
+- terminal rendering
 
 ## Core Abstractions
 
-### Model
+### `Model`
 
-A `Model` is metadata about an LLM:
+Treat `Model<TApi>` as metadata plus routing information.
 
-```typescript
-interface Model<TApi extends string> {
-  id: string;              // Provider-specific ID
-  name: string;            // Human-readable name
-  api: TApi;               // Which API implementation to use
-  provider: string;        // Provider name
-  baseUrl: string;         // API endpoint
-  reasoning: boolean;      // Supports thinking/reasoning
-  input: ("text" | "image")[];  // Supported input types
-  cost: { input: number; output: number; cacheRead: number; cacheWrite: number };
-  contextWindow: number;   // Max context window in tokens
-  maxTokens: number;       // Max output tokens
-}
-```
+The critical fields are:
 
-Key insight: The `api` field determines which provider implementation is used. Multiple providers can share the same API (e.g., Groq, xAI, and Cerebras all use `openai-completions`).
+- `api` — which implementation path is used
+- `provider` — who owns the model listing/auth story
+- `reasoning` — whether reasoning controls should matter
+- `input` — whether images are accepted
+- `compat` — where provider quirks are explicitly encoded
 
-### Context
+The important insight is that `provider` and `api` are related but not identical.
 
-A `Context` is everything needed for an LLM call:
+### `Context`
 
-```typescript
-interface Context {
-  systemPrompt: string;
-  messages: Message[];
-  tools?: Tool[];
-}
-```
+`Context` is deliberately plain and serializable:
 
-Contexts are plain JSON-serializable objects. You can save one to a file, load it later, and continue the conversation with any model from any provider.
+- `systemPrompt?`
+- `messages`
+- `tools?`
 
-### Message
+This simplicity is what makes model switching and context persistence tractable.
 
-Messages are what LLMs understand:
+### `AssistantMessageEvent`
 
-```typescript
-type Message = UserMessage | AssistantMessage | ToolResultMessage;
+Streaming is event-based, not “just chunked text”. The protocol includes:
 
-interface UserMessage {
-  role: "user";
-  content: string | (TextContent | ImageContent)[];
-  timestamp?: number;
-}
+- text start/delta/end
+- thinking start/delta/end
+- toolcall start/delta/end
+- done
+- error
 
-interface AssistantMessage {
-  role: "assistant";
-  content: (TextContent | ThinkingContent | ToolCallContent)[];
-  usage: Usage;
-  stopReason: "stop" | "length" | "toolUse" | "error" | "aborted";
-  // ... other fields
-}
-```
+Use `contentIndex` mentally as the stable coordinate inside a partially built assistant message.
 
-### Streaming Events
+## The Most Important Source File: `transform-messages.ts`
 
-`stream()` returns an async iterable of events:
+If you want to understand how pi handles cross-provider handoffs, read this file closely.
 
-```typescript
-for await (const event of stream(model, context)) {
-  switch (event.type) {
-    case "text_delta": process.stdout.write(event.delta); break;
-    case "toolcall_start": console.log("Tool:", event.partial.content[event.contentIndex].name); break;
-    case "toolcall_delta": /* partial JSON args */ break;
-    case "toolcall_end": console.log("Args:", event.toolCall.arguments); break;
-    case "done": console.log("Stop reason:", event.reason); break;
-    case "error": console.error("Error:", event.error.errorMessage); break;
-  }
-}
-```
+It encodes several important realities:
 
-## Deep Dive: Streaming Architecture
+- non-vision models must degrade image content safely
+- same-model replay is different from cross-model replay
+- reasoning blocks may need conversion or omission
+- tool call identifiers may need normalization
+- incomplete or errored assistant messages should not be replayed as if they were stable history
 
-### Event Sequence
+This file is one of the strongest examples in the repo of “the docs give the shape; the source gives the real semantics”.
 
-When you call `stream(model, context)`, the provider implementation:
+## Faux Provider Matters More Than It First Appears
 
-1. Converts the `Context` to provider-specific format
-2. Opens an HTTP connection (SSE or WebSocket)
-3. Parses provider-specific streaming chunks
-4. Emits normalized events
-5. Returns a final `AssistantMessage` via `.result()`
+`registerFauxProvider()` is not just a test helper. It is the cleanest way to isolate:
 
-### Partial Tool Arguments
+- event sequencing
+- tool-call streaming
+- cross-provider handoff assumptions
+- context mutation without real API noise
 
-During `toolcall_delta` events, `arguments` contains the best-effort parse of partial JSON. This enables real-time UI updates before the complete arguments are available. Be defensive: fields may be missing or incomplete.
+For this course, faux-provider-based understanding is part of the main path. Real multi-provider API exercises are optional.
 
-### Cross-Provider Handoffs
+## Required Exercises
 
-The library supports switching models mid-conversation. When messages from one provider are sent to another:
-- User and tool result messages pass through unchanged
-- Assistant messages from the same provider/API are preserved as-is
-- Assistant messages from different providers have their thinking blocks transformed into provider-compatible text content
-- Tool calls and regular text are preserved unchanged
+- [Exercise 01: Basic Streaming](exercises/exercise-01-basic-streaming.md)
+- [Exercise 02: Faux-Provider Handoff](exercises/exercise-02-faux-provider-handoff.md)
 
-Exact transform details evolve, so verify current behavior in `packages/ai/src/providers/transform-messages.ts` and `packages/ai/test/cross-provider-handoff.test.ts`.
+## Optional Live Exercise
 
-This is what enables Ctrl+P model cycling in pi without losing context.
+Only after the deterministic work:
 
-## Exercises
+- run a real multi-provider handoff across providers you already have access to
+- compare what surprised you against `transform-messages.ts`
 
-### Exercise 1: Basic Streaming
+## Questions to Answer Before Moving On
 
-Write a script that streams a response from any provider. Track the total tokens and cost.
+You should be able to explain:
 
-### Exercise 2: Tool Definition and Execution
-
-Define a `get_weather` tool with TypeBox schema. Stream a conversation where the model calls the tool, then handle the result and continue.
-
-### Exercise 3: Cross-Provider Handoff
-
-Start a conversation with Claude, switch to GPT-5 mid-conversation, then switch to Gemini. Verify that tool calls and transformed thinking content remain compatible across providers.
-
-### Exercise 4: Faux Provider for Testing
-
-Use `registerFauxProvider()` to create a deterministic test that simulates a tool call without making real API requests.
-
-## Key Source Files
-
-| File | Purpose |
-|------|---------|
-| `packages/ai/src/types.ts` | Core types: Model, Context, Message, events |
-| `packages/ai/src/stream.ts` | `stream()`, `complete()`, event normalization |
-| `packages/ai/src/providers/*.ts` | Provider implementations |
-| `packages/ai/src/utils/validation.ts` | Tool argument validation with TypeBox |
-| `packages/ai/src/providers/transform-messages.ts` | Cross-provider message transforms |
+- why `Context` is intentionally plain
+- why `provider` and `api` are distinct concepts
+- why streaming is modeled as structured events instead of text chunks only
+- what gets transformed during cross-provider handoff and why
+- why faux providers are central to understanding this layer

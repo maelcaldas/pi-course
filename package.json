@@ -1,5 +1,9 @@
 {
   "name": "pi-course",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "typecheck": "../pi/node_modules/.bin/tsc -p tsconfig.json --noEmit",
+    "check:paths": "node scripts/check-paths.mjs"
+  }
 }

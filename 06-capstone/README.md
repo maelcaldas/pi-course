@@ -1,144 +1,107 @@
-# Module 06: Capstone — Build Your Own Pi
+# Module 06: Capstone
 
-## Goal
+The primary capstone is now tracing real pi flows end-to-end.
 
-Implement a minimal but complete coding agent from scratch. It will not have all of pi's features, but it will have the core architecture: LLM streaming, tool execution, event-driven UI, and session persistence.
+Building a minimal clone is still useful, but it is secondary to understanding how the real system works today.
 
-## What You Will Build
+## Primary Capstone: Trace Real Pi Flows
 
-A CLI tool called `mini-pi` with these features:
-1. **LLM streaming** via pi-ai
-2. **Agent loop** with tool execution
-3. **Built-in tools**: `read`, `bash`, `edit`, `write`
-4. **Simple TUI** with an editor and message display
-5. **Session persistence** as JSONL
-6. **Print mode** for non-interactive use
+Choose at least three flows and explain them in detail from source and tests.
 
-## Architecture
+Recommended flows:
 
-```
-mini-pi
-├── src/
-│   ├── llm.ts          # Wrapper around pi-ai
-│   ├── agent.ts        # Agent loop (simplified pi-agent-core)
-│   ├── tools.ts        # Tool definitions and execution
-│   ├── tui.ts          # Minimal terminal UI
-│   ├── session.ts      # JSONL session persistence
-│   └── main.ts         # CLI entry point
-├── package.json
-└── tsconfig.json
-```
+### Flow A: Prompt to completed assistant turn
 
-## Step-by-Step Guide
+Trace:
 
-### Step 1: Project Setup
+- CLI or SDK entry
+- `AgentSession.prompt()`
+- `Agent.prompt()` / `agentLoop()`
+- provider call
+- tool execution
+- message persistence
+- final event emission
 
-Create a new TypeScript project:
+Suggested files:
 
-```bash
-mkdir mini-pi && cd mini-pi
-npm init -y
-npm install typescript @types/node @earendil-works/pi-ai @earendil-works/pi-agent-core @earendil-works/pi-tui
-npx tsc --init
-```
+- `../pi/packages/coding-agent/src/core/agent-session.ts`
+- `../pi/packages/agent/src/agent.ts`
+- `../pi/packages/agent/src/agent-loop.ts`
 
-### Step 2: LLM Wrapper (`src/llm.ts`)
+### Flow B: Extension startup and prompt shaping
 
-Create a thin wrapper around pi-ai that handles model selection and API key resolution.
+Trace:
 
-### Step 3: Tool Definitions (`src/tools.ts`)
+- resource discovery
+- extension loading
+- `before_agent_start`
+- system prompt chaining
+- provider-payload hooks
 
-Implement the four core tools:
-- `read`: Read a file's contents
-- `write`: Write contents to a file
-- `edit`: Apply a diff to a file
-- `bash`: Execute a shell command
+Suggested files:
 
-Use TypeBox for parameter schemas.
+- `../pi/packages/coding-agent/src/core/resource-loader.ts`
+- `../pi/packages/coding-agent/src/core/extensions/runner.ts`
+- `../pi/packages/coding-agent/docs/extensions.md`
 
-### Step 4: Agent Loop (`src/agent.ts`)
+### Flow C: `/tree` navigation with branch summary
 
-Implement a simplified agent loop:
-1. Accept a user message
-2. Stream LLM response
-3. Detect tool calls
-4. Execute tools
-5. Send results back to LLM
-6. Repeat until no more tool calls
+Trace:
 
-Emit events: `message_start`, `message_update`, `message_end`, `tool_execution_start`, `tool_execution_end`.
+- current leaf and target node
+- branch summary generation
+- entry attachment point
+- rebuilt runtime context
 
-### Step 5: Session Persistence (`src/session.ts`)
+Suggested files:
 
-Implement JSONL session storage:
-- Append messages to a file
-- Load previous messages on startup
-- Simple format: one JSON object per line
+- `../pi/packages/coding-agent/src/core/session-manager.ts`
+- `../pi/packages/coding-agent/src/core/agent-session.ts`
+- `../pi/packages/coding-agent/test/agent-session-tree-navigation.test.ts`
 
-Use a simplified format for the capstone. Current pi's real session format is documented in `packages/coding-agent/docs/session-format.md`.
+### Flow D: Compaction and recovery
 
-### Step 6: Minimal TUI (`src/tui.ts`)
+Trace:
 
-Build a simple terminal UI:
-- Display previous messages
-- Editor at the bottom for user input
-- Handle Enter to submit, Ctrl+C to quit
-- Show tool execution status
+- context-pressure detection
+- compaction preparation
+- summary entry creation
+- runtime context rebuild
+- follow-up prompt continuity
 
-Use pi-tui's `TUI` and `Component` interfaces.
+Suggested files:
 
-### Step 7: CLI Entry Point (`src/main.ts`)
+- `../pi/packages/coding-agent/docs/compaction.md`
+- `../pi/packages/coding-agent/test/compaction.test.ts`
+- `../pi/packages/coding-agent/src/core/agent-session.ts`
 
-Parse CLI arguments:
-- `--model`: Model to use
-- `--continue`: Continue previous session
-- `--print`: Print mode (non-interactive)
-- `--session-dir`: Custom session directory
+## Deliverable Format
 
-Dispatch to interactive or print mode.
+For each chosen flow, produce:
 
-### Step 8: Integration Test
+1. a one-paragraph summary of the purpose of the flow
+2. a sequence diagram or numbered step trace
+3. a list of invariants the flow appears to protect
+4. a short note on where the behavior is stable vs where it seems policy-driven or evolving
 
-Test the full flow:
-1. Run `mini-pi`
-2. Ask it to create a file
-3. Verify the file was created
-4. Ask it to read the file
-5. Verify the content is correct
-6. Quit and re-run with `--continue`
-7. Verify the conversation resumed
+## Optional Secondary Capstone: Build mini-pi
 
-## Extension Ideas
+If you want to internalize the architecture by reimplementation, keep the original “mini-pi” exercise as optional work.
 
-Once the core works, add these features:
-- **Steering queue**: Allow typing while the agent is working
-- **Parallel tool execution**: Run multiple tools concurrently
-- **Compaction**: Summarize old messages when context fills up
-- **Extensions**: Load custom tools from files
-- **Skills**: Support `/skill:name` commands
-- **Branching**: Support session tree navigation
+Suggested minimal scope:
 
-## Evaluation Criteria
+- `pi-ai` for model calls
+- a simplified agent loop
+- `read`, `write`, `edit`, `bash` tools
+- minimal JSONL persistence
+- a small terminal UI or print mode
 
-Your implementation should demonstrate understanding of:
-- [ ] Separation of concerns (LLM, agent, UI, persistence)
-- [ ] Event-driven architecture
-- [ ] Streaming and partial updates
-- [ ] Tool lifecycle (validation, execution, error handling)
-- [ ] Session persistence format
-- [ ] Why each design decision was made
+Use the real source as reference, but do not aim for feature parity.
 
-## Reference Implementation
+## Final Question
 
-Study the actual pi source code as you build:
-- `packages/agent/src/agent-loop.ts` for the loop structure
-- `packages/coding-agent/src/core/tools/read.ts` for the read tool
-- `packages/coding-agent/src/core/tools/write.ts` for the write tool
-- `packages/coding-agent/src/core/tools/edit.ts` for the edit tool
-- `packages/coding-agent/src/core/tools/bash.ts` for the bash tool
-- `packages/tui/src/components/editor.ts` for the editor
-- `packages/coding-agent/src/core/session-manager.ts` for persistence
+By the end of this module, you should be able to answer:
 
-## Final Notes
-
-This capstone is intentionally open-ended. The goal is not to replicate pi exactly, but to understand its architecture deeply enough to build something similar. Focus on getting the core loop right first. Everything else is an extension of that foundation.
+- If a behavior changed, which layer should own that change?
+- Which invariants in pi are structural, and which are product policy?
+- Which areas of the system feel stable, and which feel intentionally still in motion?
