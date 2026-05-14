@@ -2,6 +2,23 @@
 
 `@earendil-works/pi-tui` is a terminal UI system, not a chat-specific widget library.
 
+This module is important, but it is **not** on the shortest path to understanding pi’s core runtime.
+
+If your current goal is prompt → turn → tool → session → persistence, defer this module until after Module 05 or even after the capstone.
+
+## When To Take This Module
+
+Take it now if:
+
+- you care about terminal rendering, interaction, overlays, or IME correctness
+- you plan to edit the interactive UI soon
+- you learn best by understanding the user-facing surface in parallel with the runtime
+
+Defer it if:
+
+- your main goal is understanding core runtime logic first
+- you want to keep the prompt/agent/session causal chain intact before branching into rendering internals
+
 ## Source-Guided Path
 
 Read these in order:
@@ -63,7 +80,7 @@ That is more useful than memorizing individual helper functions.
 - [Exercise 01: Counter Component (with diff step)](exercises/exercise-01-counter.md)
 - [Exercise 02: Render Regression Reading](exercises/exercise-02-render-regression.md)
 
-## Questions to Answer Before Moving On
+## Stop Condition
 
 You should be able to explain:
 

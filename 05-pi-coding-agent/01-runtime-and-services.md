@@ -1,5 +1,7 @@
 # 05.01 Runtime and Services
 
+This is the start of Module 05, Pass I.
+
 This chapter is about how the coding agent runtime is assembled before any interesting interaction happens.
 
 ## Source-Guided Path
@@ -14,6 +16,12 @@ Read these in order:
 6. `../pi/packages/coding-agent/src/core/settings-manager.ts`
 7. `../pi/packages/coding-agent/test/model-registry.test.ts`
 8. `../pi/packages/coding-agent/test/settings-manager.test.ts`
+
+## Concrete Example
+
+- [`examples/runtime-session-replacement.ts`](examples/runtime-session-replacement.ts)
+
+Read the example after the source-guided path. It shows the minimal host pattern for replacing the active `AgentSession` without reusing stale session-local state.
 
 ## Main Abstractions
 

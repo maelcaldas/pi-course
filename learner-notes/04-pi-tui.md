@@ -1,5 +1,7 @@
 # Notes: 04 pi-tui
 
+This is a branch-track note file. Use it when you choose the TUI path, not as a prerequisite for understanding the core runtime spine.
+
 ## The render cycle (in my own words, end to end)
 
 ## Why string-based rendering is sufficient

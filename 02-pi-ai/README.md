@@ -2,7 +2,11 @@
 
 `@earendil-works/pi-ai` is the LLM-facing layer. If you misunderstand this package, you will misread the rest of the stack.
 
-## Source-Guided Path
+This is the model boundary. Learn it before you reason too hard about tools, sessions, or product policy.
+
+## Recommended Pace
+
+### First pass
 
 Read these in order:
 
@@ -11,6 +15,13 @@ Read these in order:
 3. `../pi/packages/ai/src/stream.ts`
 4. `../pi/packages/ai/src/providers/transform-messages.ts`
 5. [`tests-to-read.md`](tests-to-read.md)
+
+### Deep pass
+
+Come back later for:
+
+- a second reading of `transform-messages.ts` after you have seen session history and retries in `pi-coding-agent`
+- optional live-provider comparisons only after the faux-provider exercises are boringly clear
 
 ## Stable Surface
 
@@ -97,6 +108,16 @@ It encodes several important realities:
 
 This file is one of the strongest examples in the repo of “the docs give the shape; the source gives the real semantics”.
 
+## Abort Starts Here
+
+The full end-to-end abort story is consolidated later in Module 06, but the provider boundary starts here.
+
+When you read the tests, pay attention to:
+
+- what it means for a stream to be aborted instead of completed
+- what partial assistant content is safe to preserve
+- why aborted assistant messages are treated specially on replay
+
 ## Faux Provider Matters More Than It First Appears
 
 `registerFauxProvider()` is not just a test helper. It is the cleanest way to isolate:
@@ -120,12 +141,13 @@ Only after the deterministic work:
 - run a real multi-provider handoff across providers you already have access to
 - compare what surprised you against `transform-messages.ts`
 
-## Questions to Answer Before Moving On
+## Stop Condition
 
-You should be able to explain:
+Before moving on, you should be able to explain:
 
 - why `Context` is intentionally plain
 - why `provider` and `api` are distinct concepts
 - why streaming is modeled as structured events instead of text chunks only
 - what gets transformed during cross-provider handoff and why
 - why faux providers are central to understanding this layer
+- why the abort story begins here but does not end here

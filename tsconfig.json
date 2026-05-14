@@ -11,10 +11,12 @@
     "baseUrl": "../pi",
     "paths": {
       "@earendil-works/pi-ai": ["packages/ai/src/index.ts"],
+      "@earendil-works/pi-ai/oauth": ["packages/ai/src/oauth.ts"],
       "@earendil-works/pi-agent-core": ["packages/agent/src/index.ts"],
       "@earendil-works/pi-tui": ["packages/tui/src/index.ts"],
       "@earendil-works/pi-coding-agent": ["packages/coding-agent/src/index.ts"]
     }
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts", "**/*.d.ts"],
+  "exclude": ["03-pi-agent-core/examples/custom-message-types.ts"]
 }

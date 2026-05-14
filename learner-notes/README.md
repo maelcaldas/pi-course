@@ -1,6 +1,6 @@
 # Learner Notes
 
-This directory is your synthesis space. Each file mirrors a course module and contains the "What To Be Able To Explain" / "Questions to Answer Before Moving On" prompts as headings to fill in.
+This directory is your synthesis space. Each file mirrors a course module and contains the prompts you should be able to answer in your own words.
 
 Rules:
 
@@ -9,7 +9,22 @@ Rules:
 - When you finish a module, re-read your notes a week later. If anything is opaque to your future self, the note is wrong, not the future self.
 - Do not commit anything sensitive (real prompts, API keys, customer data). These notes are personal.
 
-Files:
+## Recommended Note-Taking Order
+
+Follow the course’s **core track**, not strict numeric order:
+
+1. `01-foundations.md`
+2. `02-pi-ai.md`
+3. `03-pi-agent-core.md`
+4. `05-pi-coding-agent.md`
+5. `06-cross-cutting-subsystems.md`
+6. `07-capstone.md`
+
+Then take the branch notes when relevant:
+
+- `04-pi-tui.md`
+
+## Notes Files
 
 - `01-foundations.md`
 - `02-pi-ai.md`

@@ -1,6 +1,16 @@
 # 05.03 Sessions, Compaction, and Tree Navigation
 
+This is Module 05, Pass II.
+
+Do not start here until runtime assembly, resource loading, and extension composition feel stable. This chapter is easier once you already know how a run is assembled.
+
 This chapter covers the persistent memory model of pi and the runtime transforms that keep long sessions usable.
+
+## Read This Worked Flow First
+
+- [`../07-capstone/flow-c-worked-example.md`](../07-capstone/flow-c-worked-example.md)
+
+Treat that file as the narrative guide for this chapter, not as something to postpone until the end of the course.
 
 ## Source-Guided Path
 

@@ -12,6 +12,16 @@
 
 ## Why extensibility is a design principle rather than a plugin afterthought
 
+## Layer ownership exercise — my answers
+
+| Concern | Primary owner | Adjacent layer | Why ownership stays with primary |
+| --- | --- | --- | --- |
+| 1. | | | |
+| 2. | | | |
+| 3. | | | |
+| 4. | | | |
+| 5. | | | |
+
 ## Invariants I think Module 01 is protecting
 
 1.

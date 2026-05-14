@@ -37,6 +37,31 @@ npm run check:paths
 
 If `npm run typecheck` fails because `../pi/node_modules` is missing, install dependencies in `../pi` first.
 
+## Recommended Learning Flow
+
+Important: the directory numbers mostly follow package boundaries. The best learning flow for deep core-runtime understanding is **not** strictly numeric.
+
+### Core track
+
+Follow this if your goal is the shortest path to understanding how pi works end-to-end:
+
+1. [00 - How to Use This Course](00-how-to-use-this-course/)
+   - start with [`01-system-spine.md`](00-how-to-use-this-course/01-system-spine.md)
+2. [01 - Foundations](01-foundations/)
+3. [02 - pi-ai](02-pi-ai/)
+4. [03 - pi-agent-core](03-pi-agent-core/)
+5. [05 - pi-coding-agent](05-pi-coding-agent/) — Part I: runtime assembly + extensions + prompt shaping
+6. [05 - pi-coding-agent](05-pi-coding-agent/) — Part II: sessions + tree navigation + compaction
+7. [06 - Cross-Cutting Subsystems](06-cross-cutting-subsystems/) — as consolidation, not first exposure
+8. [07 - Capstone](07-capstone/) — one independent full flow trace
+
+### Branch tracks
+
+Take these after the core track, or when you specifically need them:
+
+- [04 - pi-tui](04-pi-tui/) — important UI/rendering branch, but not on the shortest path to runtime understanding
+- evolving orchestration surfaces like `AgentHarness` — important, but explicitly still moving
+
 ## Study Method
 
 Each module should be approached in this order:
@@ -59,14 +84,14 @@ Throughout the course, reason about three categories separately:
 
 | Module | Topic | Purpose |
 | --- | --- | --- |
-| [00 - How to Use This Course](00-how-to-use-this-course/) | Method, setup, repo map | Align on how to learn from source and tests |
+| [00 - How to Use This Course](00-how-to-use-this-course/) | Method, setup, system spine | Align on how to learn from source and tests, then get one short end-to-end movie of the system |
 | [01 - Foundations](01-foundations/) | Layers, boundaries, philosophy | Build the architectural model |
 | [02 - pi-ai](02-pi-ai/) | Unified LLM layer | Understand streaming, tools, provider transforms, faux providers |
 | [03 - pi-agent-core](03-pi-agent-core/) | Agent loop | Understand turns, tool execution, queues, and lifecycle |
-| [04 - pi-tui](04-pi-tui/) | Terminal UI | Understand differential rendering, overlays, focus, and regressions |
+| [04 - pi-tui](04-pi-tui/) | Terminal UI | Understand rendering/focus as a branch track, not the core-runtime spine |
 | [05 - pi-coding-agent](05-pi-coding-agent/) | Product runtime | Understand runtime assembly, extensions, sessions, compaction, and tree navigation |
-| [06 - Cross-Cutting Subsystems](06-cross-cutting-subsystems/) | Event bus, tools, abort, persistence | Understand the systems that span all layers |
-| [07 - Capstone](07-capstone/) | Real-flow tracing | Prove deep understanding on real pi flows |
+| [06 - Cross-Cutting Subsystems](06-cross-cutting-subsystems/) | Event bus, tools, abort, persistence | Consolidate the cross-layer concerns you first saw in Modules 02, 03, and 05 |
+| [07 - Capstone](07-capstone/) | Real-flow tracing | Prove deep understanding on one independent real pi flow |
 | [Learner Notes](learner-notes/) | Synthesis | Write down what you understand, per module |
 | [Understanding Checklist](UNDERSTANDING-CHECKLIST.md) | Exit criteria | Verify that you actually understand the system |
 
@@ -84,11 +109,12 @@ In practice, check in this order:
 
 If you want the fastest route to real understanding:
 
-- read `00`, `01`, `02`, `03`, `04`
-- do all `tests-to-read.md` files in order
-- spend most of your time in `05`
-- read `06` to connect what you saw in `02`–`05`
-- use `07` to trace real production flows end-to-end
+- start with the 20-minute system spine in Module 00
+- do Module 01 immediately after it
+- keep the causal chain intact through Modules 02 → 03 → 05
+- treat Module 06 as a consolidation pass, not as a new mountain
+- do one independent capstone flow before attempting more
+- take Module 04 after the runtime/history story is already stable in your head
 - fill in `learner-notes/` as you go; treat empty sections as gaps in understanding
 
 The optional “build mini-pi” work remains useful, but it is no longer the main endpoint of the course.

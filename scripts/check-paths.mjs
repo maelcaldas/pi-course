@@ -16,7 +16,8 @@ if (!existsSync(repoDir)) {
 
 const allowedExtensions = new Set([".md", ".ts", ".jsonl"]);
 const ignoredDirs = new Set([".git", "node_modules"]);
-const pathPattern = /packages\/[A-Za-z0-9_.\/-]+/g;
+const repoRefPattern = /\.\.\/pi\/[A-Za-z0-9_.\/-]+/g;
+const markdownLinkPattern = /!?\[[^\]]*]\(([^)]+)\)/g;
 const trailingJunkPattern = /[),.;:`"'\]]+$/;
 
 function walk(dir) {
@@ -36,29 +37,80 @@ function walk(dir) {
 	return files;
 }
 
-const missing = [];
+function resolveCourseLink(filePath, target) {
+	if (target.startsWith("../pi/")) {
+		return path.resolve(courseDir, target);
+	}
+	return path.resolve(path.dirname(filePath), target);
+}
+
+function normalizeLinkTarget(rawTarget) {
+	const trimmed = rawTarget.trim();
+	const unwrapped = trimmed.startsWith("<") && trimmed.endsWith(">") ? trimmed.slice(1, -1) : trimmed;
+	const withoutTitle = unwrapped.split(/\s+/, 1)[0] ?? "";
+	return withoutTitle;
+}
+
+function shouldIgnoreLink(target) {
+	return (
+		target === "" ||
+		target.startsWith("#") ||
+		target.startsWith("http://") ||
+		target.startsWith("https://") ||
+		target.startsWith("mailto:")
+	);
+}
+
+const errors = [];
 
 for (const filePath of walk(courseDir)) {
 	const text = readFileSync(filePath, "utf8");
-	const refs = new Set(text.match(pathPattern) ?? []);
-	for (const rawRef of refs) {
+	const relativeFile = path.relative(courseDir, filePath);
+
+	const repoRefs = new Set(text.match(repoRefPattern) ?? []);
+	for (const rawRef of repoRefs) {
 		const ref = rawRef.replace(trailingJunkPattern, "");
-		const target = path.join(repoDir, ref);
+		const relativeRepoPath = ref.replace(/^\.\.\/pi\//, "");
+		const target = path.join(repoDir, relativeRepoPath);
 		if (!existsSync(target)) {
-			missing.push({
-				file: path.relative(courseDir, filePath),
-				ref,
+			errors.push({
+				kind: "repo-ref",
+				file: relativeFile,
+				reference: ref,
+			});
+		}
+	}
+
+	if (path.extname(filePath) !== ".md") {
+		continue;
+	}
+
+	for (const match of text.matchAll(markdownLinkPattern)) {
+		const target = normalizeLinkTarget(match[1] ?? "");
+		if (shouldIgnoreLink(target)) {
+			continue;
+		}
+		const withoutAnchor = target.split("#", 1)[0] ?? "";
+		if (withoutAnchor === "") {
+			continue;
+		}
+		const resolved = resolveCourseLink(filePath, withoutAnchor);
+		if (!existsSync(resolved)) {
+			errors.push({
+				kind: "markdown-link",
+				file: relativeFile,
+				reference: target,
 			});
 		}
 	}
 }
 
-if (missing.length > 0) {
-	console.error("Found broken ../pi path references:\n");
-	for (const item of missing) {
-		console.error(`- ${item.file}: ${item.ref}`);
+if (errors.length > 0) {
+	console.error("Found broken references:\n");
+	for (const error of errors) {
+		console.error(`- [${error.kind}] ${error.file}: ${error.reference}`);
 	}
 	process.exit(1);
 }
 
-console.log("All ../pi path references resolve.");
+console.log("All repo references and local markdown links resolve.");

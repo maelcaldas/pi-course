@@ -1,5 +1,16 @@
 # Notes: 06 Cross-Cutting Subsystems
 
+Use this file as an owner-map and consolidation pass after Modules 02, 03, and 05. If it feels like first exposure, go back.
+
+## Cross-cutting owner map
+
+| Concern | First place I really saw it | Primary owner | Policy owner (if different) | Common confusion |
+| --- | --- | --- | --- | --- |
+| events | | | | |
+| tools | | | | |
+| abort | | | | |
+| persistence | | | | |
+
 ## Event vocabularies
 
 - streaming events (file):

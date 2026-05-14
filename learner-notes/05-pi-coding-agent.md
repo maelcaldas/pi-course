@@ -1,27 +1,41 @@
 # Notes: 05 pi-coding-agent
 
-## How `createAgentSession()` assembles runtime dependencies
+## Pass I — Runtime Assembly and Prompt Shaping
 
-## Why session/runtime replacement is a first-class concern
+### How `createAgentSession()` assembles runtime dependencies
 
-## How `ModelRegistry`, `SettingsManager`, and `AuthStorage` interact
+### Why session/runtime replacement is a first-class concern
 
-## How `DefaultResourceLoader` merges resources and handles collisions
+### How `ModelRegistry`, `SettingsManager`, and `AuthStorage` interact
 
-### Precedence rules (my version)
+### How `DefaultResourceLoader` merges resources and handles collisions
+
+#### Precedence rules (my version)
 
 - prompts:
 - skills:
 - themes:
 - extensions:
 
-## How `ExtensionRunner` composes handlers and prompt transformations
+### How `ExtensionRunner` composes handlers and prompt transformations
 
-## Agent-level vs provider-level hooks
+### Agent-level vs provider-level hooks
 
-## How `SessionManager.buildSessionContext()` reconstructs runtime context
+### Pass I stop condition (in my own words)
 
-## Compaction vs branch summary vs retry (one sentence each)
+- I now know where product policy begins because:
+- The stale-session footgun is:
+- The two source files I would inspect first for prompt shaping are:
+
+## Pass II — Sessions, Trees, and Context Pressure
+
+### How `SessionManager.buildSessionContext()` reconstructs runtime context
+
+### Why sessions are trees rather than linear transcripts
+
+### Flow C: what actually happens during tree navigation with branch summary
+
+### Compaction vs branch summary vs retry (one sentence each)
 
 - compaction:
 - branch summary:

@@ -1,8 +1,30 @@
 # Module 06: Cross-Cutting Subsystems
 
-The previous modules followed package boundaries. This module follows concerns that **span** packages and that contributors trip over precisely because they do not live in one place.
+This is a consolidation module, not a new mountain.
 
-If you can hold these four subsystems in your head at the same time, you can reason about almost any change in pi without breaking an invariant you did not know existed.
+By the time you reach it, each concern here should already feel partly familiar from Modules 02, 03, and 05. The job now is to align ownership, vocabulary, and failure modes across layers.
+
+## When To Read This Module
+
+Use this module in one of two ways:
+
+1. **As a post-Module-05 consolidation pass** — the recommended path
+2. **As a targeted repair tool** — when you realize a specific concern (events, tools, abort, persistence) is still fuzzy
+
+Do not treat it as your first exposure to these ideas.
+
+## First-Pass Route
+
+If you want the lightest useful pass, do this:
+
+1. read this README
+2. read [`tests-to-read.md`](tests-to-read.md)
+3. read only the chapter that matches your current confusion
+4. update your owner map in `learner-notes/06-cross-cutting-subsystems.md`
+
+## Deep-Pass Route
+
+When you want the full consolidation pass, read all four chapters.
 
 ## The Four Subsystems
 
@@ -15,13 +37,14 @@ If you can hold these four subsystems in your head at the same time, you can rea
 
 ## How To Read This Module
 
-Unlike modules 02–05, this module is **not** organized around one package. Each chapter pulls together files from multiple packages. Expect to jump between `packages/ai`, `packages/agent`, and `packages/coding-agent` constantly.
+Unlike Modules 02–05, this module is **not** organized around one package. Each chapter pulls together files from multiple packages. Expect to jump between `packages/ai`, `packages/agent`, and `packages/coding-agent` constantly.
 
 Treat each chapter as:
 
 1. one short conceptual frame
 2. a curated multi-file reading list
 3. a set of "which layer owns this?" questions
+4. a matching test list in [`tests-to-read.md`](tests-to-read.md)
 
 ## Why This Module Exists
 
@@ -36,9 +59,9 @@ Misreading any of these as "someone else's problem" produces the most common con
 
 ## Stable Surface vs Evolving
 
-Most of what is described here is **current implementation**. The boundaries themselves ("events flow up, aborts flow down, persistence belongs to the product") are stable. The exact splits between `Agent`, `AgentSession`, and `AgentHarness` are still moving — see the `AgentHarness` doc you read in Module 03.
+Most of what is described here is **current implementation**. The boundaries themselves ("events flow up, aborts flow down, persistence belongs to the product") are stable. The exact splits between `Agent`, `AgentSession`, and `AgentHarness` are still moving — see the `AgentHarness` doc from Module 03.
 
-## Exit Criteria
+## Stop Condition
 
 Before moving to the capstone, you should be able to answer:
 

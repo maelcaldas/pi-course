@@ -2,7 +2,11 @@
 
 `@earendil-works/pi-agent-core` is where “LLM call” becomes “agent turn”.
 
-## Source-Guided Path
+Most of the tool and event semantics later consolidated in Module 06 are first encountered here.
+
+## Recommended Pace
+
+### First pass
 
 Read these in order:
 
@@ -11,7 +15,14 @@ Read these in order:
 3. `../pi/packages/agent/src/agent-loop.ts`
 4. `../pi/packages/agent/src/agent.ts`
 5. [`tests-to-read.md`](tests-to-read.md)
-6. `../pi/packages/agent/docs/agent-harness.md`
+
+### Deep pass
+
+Come back later for:
+
+- `../pi/packages/agent/docs/agent-harness.md`
+
+Treat `AgentHarness` as important evolving direction, not as the first thing you need in order to understand the stable turn engine.
 
 ## Stable Surface
 
@@ -64,6 +75,12 @@ Deep understanding here means being able to explain two orderings at once:
 
 That distinction is not accidental. It separates UI responsiveness from deterministic transcript construction.
 
+## Why This Module Comes Before Most Product Logic
+
+If you skip this layer and jump into `AgentSession`, you will misread product policy as if it were the turn engine itself.
+
+The core job here is to understand what the generic agent loop already guarantees before `pi-coding-agent` starts adding session, extension, retry, and persistence policy on top.
+
 ## Evolving Direction: AgentHarness
 
 `AgentHarness` is not the stable public center of this module yet, but it is important for understanding the direction of orchestration work.
@@ -84,12 +101,15 @@ Treat it as **evolving direction**, not as the final stable model.
 - [Exercise 02: Parallel Tool Execution](exercises/exercise-02-parallel-tools.md)
 - [Exercise 03: AgentHarness Reading](exercises/exercise-03-agent-harness-reading.md)
 
-## Questions to Answer Before Moving On
+If you are on a first pass and want to preserve momentum, do Exercises 01 and 02 before Exercise 03.
 
-You should be able to explain:
+## Stop Condition
+
+Before moving on, you should be able to explain:
 
 - the difference between the inner and outer loops
 - why `AgentMessage` is richer than raw LLM message types
 - why the `Agent` class adds semantics beyond the raw loop
 - why tool completion order and transcript order are intentionally different
+- what guarantees this layer gives before product policy is layered on top
 - what problem `AgentHarness` is trying to solve beyond `Agent`

@@ -2,6 +2,8 @@
 
 This module establishes the architectural model of pi before you dive into implementation details.
 
+Take it immediately after the 20-minute system spine in Module 00. The spine gives you one causal movie; this module turns that movie into explicit boundary ownership.
+
 ## Source-Guided Path
 
 Read these in order:
@@ -102,6 +104,12 @@ As you move into later modules, keep asking:
 - Which parts of the transcript are persisted vs only rendered?
 - Where is ordering guaranteed, and where is it only incidental?
 - Which features are implemented by composition rather than by deep coupling?
+
+## Required Exercise
+
+- [Exercise 01: Layer Ownership](exercises/exercise-01-layer-ownership.md)
+
+Do this before moving on. It is the shortest way to expose whether your layer boundaries are actually clear.
 
 ## Before Moving On
 

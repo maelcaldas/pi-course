@@ -1,12 +1,12 @@
 # Notes: 07 Capstone
 
-Match the depth of `../07-capstone/flow-a-worked-example.md` for each flow you write up.
+Use `../07-capstone/flow-template.md` for the required independent flow.
 
-For each flow, produce all five sections.
+Match the depth of `../07-capstone/flow-a-worked-example.md` and `../07-capstone/flow-c-worked-example.md`.
 
----
+## Required independent flow
 
-## Flow B: Extension startup and prompt shaping
+### Flow name
 
 ### Summary (one paragraph)
 
@@ -14,7 +14,7 @@ For each flow, produce all five sections.
 
 ### Sequence diagram
 
-```
+```text
 ```
 
 ### Invariants protected
@@ -23,7 +23,9 @@ For each flow, produce all five sections.
 
 ---
 
-## Flow C: `/tree` navigation with branch summary
+## Optional second flow
+
+### Flow name
 
 ### Summary (one paragraph)
 
@@ -31,7 +33,7 @@ For each flow, produce all five sections.
 
 ### Sequence diagram
 
-```
+```text
 ```
 
 ### Invariants protected
@@ -40,7 +42,9 @@ For each flow, produce all five sections.
 
 ---
 
-## Flow D: Compaction and recovery
+## Optional third flow
+
+### Flow name
 
 ### Summary (one paragraph)
 
@@ -48,7 +52,7 @@ For each flow, produce all five sections.
 
 ### Sequence diagram
 
-```
+```text
 ```
 
 ### Invariants protected

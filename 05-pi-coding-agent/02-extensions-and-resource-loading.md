@@ -1,5 +1,7 @@
 # 05.02 Extensions and Resource Loading
 
+This is the second half of Module 05, Pass I.
+
 This chapter explains how pi loads behavior and how extensions are allowed to shape a run.
 
 ## Source-Guided Path
@@ -12,6 +14,12 @@ Read these in order:
 4. `../pi/packages/coding-agent/src/core/extensions/types.ts`
 5. `../pi/packages/coding-agent/test/resource-loader.test.ts`
 6. `../pi/packages/coding-agent/test/extensions-runner.test.ts`
+
+## Concrete Example
+
+- [`examples/resource-loader-override.ts`](examples/resource-loader-override.ts)
+
+Read the example after the source-guided path. It demonstrates a useful combination that is otherwise easy to keep abstract for too long: base system-prompt override + synthetic context file + chained `before_agent_start` handlers.
 
 ## What This Layer Owns
 

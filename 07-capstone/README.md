@@ -1,38 +1,55 @@
 # Module 07: Capstone
 
-The primary capstone is now tracing real pi flows end-to-end.
+The capstone should feel like assembly, not like your first serious synthesis task.
 
-Building a minimal clone is still useful, but it is secondary to understanding how the real system works today.
+By the time you arrive here, you should already have:
 
-## Calibration: Worked Flow A
+- read the short system spine in Module 00
+- traced the full prompt-to-turn worked flow (`flow-a-worked-example.md`) when ready
+- used the tree-navigation worked flow (`flow-c-worked-example.md`) during Module 05, Part II
 
-Before producing your own flow notes, read [`flow-a-worked-example.md`](flow-a-worked-example.md). It is the **bar** for depth and structure. Your other flows should match it in shape: one-paragraph summary, numbered step trace tied to files, sequence diagram, invariants, and a stable / current / policy / evolving classification at the end.
+## Calibration: Worked Flows A and C
 
-Do not skip this. Different readers calibrate “deep enough” very differently — the worked example is the shared reference.
+These are the calibration examples:
 
-## Primary Capstone: Trace Real Pi Flows
+- [`flow-a-worked-example.md`](flow-a-worked-example.md) — prompt to completed assistant turn
+- [`flow-c-worked-example.md`](flow-c-worked-example.md) — `/tree` navigation with branch summary
 
-Choose at least three flows and explain them in detail from source and tests. Flow A is provided as a worked example; you still owe at least three of B/C/D (or your own) at the same depth.
+Together they are the bar for depth and structure.
 
-Recommended flows:
+## Required Capstone
 
-### Flow A: Prompt to completed assistant turn
+Produce **one independent full flow note** at the same depth as the worked examples.
 
-Trace:
+Use [`flow-template.md`](flow-template.md).
 
-- CLI or SDK entry
-- `AgentSession.prompt()`
-- `Agent.prompt()` / `agentLoop()`
-- provider call
-- tool execution
-- message persistence
-- final event emission
+Good default choices:
 
-Suggested files:
+- **Flow B** — extension startup and prompt shaping
+- **Flow D** — compaction and recovery
 
-- `../pi/packages/coding-agent/src/core/agent-session.ts`
-- `../pi/packages/agent/src/agent.ts`
-- `../pi/packages/agent/src/agent-loop.ts`
+You may also choose another real flow you care about.
+
+## Optional Advanced Capstone
+
+After the required flow, add one or two more if you want stronger contribution readiness.
+
+That means:
+
+- second independent flow = better comparative understanding
+- third independent flow = strong evidence you can reason about changes safely
+
+But these are optional. The mandatory path is one full independent flow done well.
+
+## Suggested Order Inside This Module
+
+1. re-read Flow A if the prompt/turn spine has gone fuzzy
+2. re-read Flow C if tree/history semantics are fuzzy
+3. pick one new flow only
+4. write it using the template
+5. answer the final architectural questions
+
+## Recommended Flows
 
 ### Flow B: Extension startup and prompt shaping
 
@@ -49,21 +66,6 @@ Suggested files:
 - `../pi/packages/coding-agent/src/core/resource-loader.ts`
 - `../pi/packages/coding-agent/src/core/extensions/runner.ts`
 - `../pi/packages/coding-agent/docs/extensions.md`
-
-### Flow C: `/tree` navigation with branch summary
-
-Trace:
-
-- current leaf and target node
-- branch summary generation
-- entry attachment point
-- rebuilt runtime context
-
-Suggested files:
-
-- `../pi/packages/coding-agent/src/core/session-manager.ts`
-- `../pi/packages/coding-agent/src/core/agent-session.ts`
-- `../pi/packages/coding-agent/test/agent-session-tree-navigation.test.ts`
 
 ### Flow D: Compaction and recovery
 
@@ -83,7 +85,7 @@ Suggested files:
 
 ## Deliverable Format
 
-For each chosen flow, produce:
+For the required flow, produce:
 
 1. a one-paragraph summary of the purpose of the flow
 2. a sequence diagram or numbered step trace
@@ -104,7 +106,7 @@ Suggested minimal scope:
 
 Use the real source as reference, but do not aim for feature parity.
 
-## Final Question
+## Final Questions
 
 By the end of this module, you should be able to answer:
 

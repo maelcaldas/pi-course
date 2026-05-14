@@ -2,6 +2,8 @@
 
 This is the calibration target for capstone deliverables. Your other flows should match this depth.
 
+If this feels too dense on a first pass, go back and read the shorter [`../00-how-to-use-this-course/01-system-spine.md`](../00-how-to-use-this-course/01-system-spine.md) version first. This file is the full-fidelity expansion of that same prompt-to-turn spine.
+
 Flow A: a single user prompt becomes a completed assistant turn, possibly with tool calls, persisted to the session.
 
 > Line numbers are accurate at the time of writing but the *responsibilities* are what matter. If line numbers drift, do not patch them — re-read the file.

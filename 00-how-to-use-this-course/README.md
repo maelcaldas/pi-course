@@ -1,14 +1,14 @@
 # Module 00: How to Use This Course
 
-This module sets the method for the rest of the course.
+This module sets the method and the reading order for the rest of the course.
 
-The intended reader already knows how to read code. The point here is to choose the right reading order so you build the right mental model from the real repo, not just from simplified explanations.
+The intended reader already knows how to read code. The point here is to choose the right order so you build the right mental model from the real repo, not just from simplified explanations.
 
 ## Required Setup
 
 Expected directory layout:
 
-```
+```text
 /workspace/
 ├── pi/
 └── pi-course/
@@ -24,6 +24,38 @@ npm run check:paths
 `npm run typecheck` proves the TypeScript examples still line up with the live repo.
 
 `npm run check:paths` proves file references in the course still point at real files in `../pi`.
+
+## Start Here: The 20-Minute System Spine
+
+Before doing anything else, read:
+
+- [`01-system-spine.md`](01-system-spine.md)
+
+That file is the short end-to-end movie of the system. It is intentionally smaller than the capstone worked flows. The goal is to give every later module a shared causal spine.
+
+## Important: The Best Reading Order Is Not Strictly Numeric
+
+The module numbers mostly follow package boundaries. The best learning flow for deep core-runtime understanding does **not** strictly follow the directory numbers.
+
+## Recommended Core Track
+
+If your goal is deep understanding of pi’s core logic, follow this order:
+
+1. Module 00 — start with the system spine
+2. Module 01 — foundations / ownership boundaries
+3. Module 02 — `pi-ai`
+4. Module 03 — `pi-agent-core`
+5. Module 05, Part I — runtime assembly + extensions + prompt shaping
+6. Module 05, Part II — sessions + tree navigation + compaction
+7. Module 06 — cross-cutting consolidation
+8. Module 07 — one independent full flow trace
+
+## Recommended Branch Tracks
+
+Take these after the core track, or when you specifically need them:
+
+- Module 04 — `pi-tui` (important, but not on the shortest path to runtime understanding)
+- `AgentHarness` / other evolving orchestration surfaces (read after Module 03 first pass, or at the end)
 
 ## How to Read Pi
 
@@ -42,8 +74,8 @@ Focus on these packages first:
 
 - `packages/ai` — LLM abstraction, provider normalization, tool-call streaming
 - `packages/agent` — generic agent loop, tool execution, queue semantics
-- `packages/tui` — terminal rendering and focus model
 - `packages/coding-agent` — product runtime, sessions, extensions, compaction, tree navigation
+- `packages/tui` — terminal rendering and focus model (branch track for the core-runtime path)
 
 ## Stable Surface vs Current Implementation vs Evolving Direction
 
@@ -99,10 +131,11 @@ Separate these classes mentally:
 Use this loop every time:
 
 1. Read the module README in `pi-course`
-2. Open every file listed under “Source-guided path”
+2. Take the **first-pass route** first, if the module provides one
 3. Read the linked `tests-to-read.md`
 4. Write down 3–5 invariants the module is protecting
 5. Do exactly one exercise before moving on
+6. Come back later for the **deep-pass route** only after the first pass is stable in your head
 
 ## Anti-Patterns
 
@@ -110,6 +143,7 @@ Avoid these if your goal is deep understanding:
 
 - treating package READMEs as complete truth
 - skipping tests because the source “already makes sense”
+- forcing yourself to read the modules in numeric order when the causal flow suggests otherwise
 - treating the coding agent product as if it were the core architecture
 - assuming current implementation details are identical to intended long-term direction
 
@@ -120,4 +154,5 @@ Before moving to Foundations, you should be able to answer:
 - Why does this course require the local `../pi` repo?
 - What is the difference between stable surface and evolving direction?
 - Why are tests part of the primary learning path?
-- Which four packages matter most for this course, and why?
+- What is the prompt-to-persistence spine of the system in one paragraph?
+- Why is Module 04 important but still not on the shortest path to core runtime understanding?
